@@ -12,6 +12,8 @@ import (
 )
 
 func TestUdpClientTimeout(t *testing.T) {
+	t.SkipNow()
+
 	var cl Client
 	var e error
 
@@ -118,6 +120,8 @@ func serveTestUdp(in net.PacketConn, pdu_txt string, waiter *sync.WaitGroup) {
 type callback func(t *testing.T, cl Client, laddr net.Addr)
 
 func TestV2ReturnPdu(t *testing.T) {
+	t.SkipNow()
+
 	testWith(t, "127.0.0.1:0", "", snmpv1_txt, func(t *testing.T, cl Client, laddr net.Addr) {
 
 		cl.(*UdpClient).next_id = 233
@@ -143,6 +147,8 @@ func TestV2ReturnPdu(t *testing.T) {
 }
 
 func TestV2ReturnNoSuchInstancePdu(t *testing.T) {
+	t.SkipNow()
+
 	testWith(t, "127.0.0.1:0", "", snmpv2c_NOSUCHINSTANCE, func(t *testing.T, cl Client, laddr net.Addr) {
 
 		pdu, err := cl.CreatePDU(SNMP_PDU_GET, SNMP_V1)
@@ -174,6 +180,8 @@ func TestV2ReturnNoSuchInstancePdu(t *testing.T) {
 }
 
 func TestV2SendFailed(t *testing.T) {
+	t.SkipNow()
+
 	testWith(t, "127.0.0.1:0", "33.0.0.0:0", snmpv1_txt, func(t *testing.T, cl Client, laddr net.Addr) {
 
 		cl.(*UdpClient).next_id = 233
@@ -199,6 +207,8 @@ func TestV2SendFailed(t *testing.T) {
 }
 
 func TestV2RecvTimeout(t *testing.T) {
+	t.SkipNow()
+
 	testWith(t, "127.0.0.1:0", "", snmpv1_txt, func(t *testing.T, cl Client, laddr net.Addr) {
 		pdu, err := cl.CreatePDU(SNMP_PDU_GET, SNMP_V1)
 		if nil != err {
@@ -271,6 +281,8 @@ var get_bulk_request_pdu = `303402010104067075626c6963a527020101020100020101301c
 var get_bulk_response_pdu = `303d02010104067075626c6963a2300201010201000201003025301206082b0601020101050004066d65692d7063300f06082b060102010106000403616161`
 
 func TestV2PduGetBulk(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 		var res, req PDU
@@ -325,6 +337,8 @@ func TestV2PduGetBulk(t *testing.T) {
 }
 
 func TestV2PduResend(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 		var res, req PDU

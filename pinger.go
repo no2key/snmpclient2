@@ -1,22 +1,11 @@
-// Copyright 2009 The Go Authors.  All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package snmpclient
 
-// #include "bsnmp/config.h"
-// #include "bsnmp/asn1.h"
-// #include "bsnmp/snmp.h"
-// #include "bsnmp/gobindings.h"
-import "C"
 import (
 	"fmt"
 	"net"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-	"unsafe"
 )
 
 type PingResult struct {
@@ -162,59 +151,60 @@ func (self *internal_pinger) Recv(timeout time.Duration) (net.Addr, SnmpVersion,
 func (self *internal_pinger) serve() {
 	defer self.wait.Done()
 
-	reply := make([]byte, 2048)
-	var buffer C.asn_buf_t
-	var pdu C.snmp_pdu_t
+	self.ch <- &PingResult{Error: NotImplented}
+	// reply := make([]byte, 2048)
+	// var buffer C.asn_buf_t
+	// var pdu C.snmp_pdu_t
 
-	for 1 == atomic.LoadInt32(&self.is_running) {
-		l, ra, err := self.conn.ReadFrom(reply)
-		if err != nil {
-			if strings.Contains(err.Error(), "No service is operating") { //Port Unreachable
-				continue
-			}
-			if strings.Contains(err.Error(), "forcibly closed by the remote host") { //Port Unreachable
-				continue
-			}
-			self.ch <- &PingResult{Error: fmt.Errorf("ReadFrom failed: %v, %v", ra, err)}
-			continue
-		}
+	// for 1 == atomic.LoadInt32(&self.is_running) {
+	// 	l, ra, err := self.conn.ReadFrom(reply)
+	// 	if err != nil {
+	// 		if strings.Contains(err.Error(), "No service is operating") { //Port Unreachable
+	// 			continue
+	// 		}
+	// 		if strings.Contains(err.Error(), "forcibly closed by the remote host") { //Port Unreachable
+	// 			continue
+	// 		}
+	// 		self.ch <- &PingResult{Error: fmt.Errorf("ReadFrom failed: %v, %v", ra, err)}
+	// 		continue
+	// 	}
 
-		C.set_asn_u_ptr(&buffer.asn_u, (*C.char)(unsafe.Pointer(&reply[0])))
-		buffer.asn_len = C.size_t(l)
+	// 	C.set_asn_u_ptr(&buffer.asn_u, (*C.char)(unsafe.Pointer(&reply[0])))
+	// 	buffer.asn_len = C.size_t(l)
 
-		err = DecodePDUHeader(&buffer, &pdu)
-		if nil != err {
-			self.ch <- &PingResult{Error: fmt.Errorf("Parse Data failed: %s %v", ra.String(), err)}
-			continue
-		}
-		ver := SNMP_Verr
-		id := 0
-		//community := ""
-		switch pdu.version {
-		case uint32(SNMP_V3):
-			ver = SNMP_V3
-			id = int(pdu.identifier)
-		case uint32(SNMP_V2C):
-			ver = SNMP_V2C
-			err = DecodePDUBody(&buffer, &pdu)
-			if nil == err {
-				id = int(pdu.request_id)
-			}
-			//community = C.GoString(pdu.community)
-		case uint32(SNMP_V1):
-			ver = SNMP_V1
-			err = DecodePDUBody(&buffer, &pdu)
-			if nil == err {
-				id = int(pdu.request_id)
-			}
-			//community = C.GoString(pdu.community)
-		}
-		// if 0 == len(community) {
-		// 	community = self.community
-		// }
-		self.ch <- &PingResult{Id: id, Addr: ra, Version: ver, Community: self.community, SecurityParams: self.securityParams, Timestamp: time.Now()}
-		C.snmp_pdu_free(&pdu)
-	}
+	// 	err = DecodePDUHeader(&buffer, &pdu)
+	// 	if nil != err {
+	// 		self.ch <- &PingResult{Error: fmt.Errorf("Parse Data failed: %s %v", ra.String(), err)}
+	// 		continue
+	// 	}
+	// 	ver := SNMP_Verr
+	// 	id := 0
+	// 	//community := ""
+	// 	switch pdu.version {
+	// 	case uint32(SNMP_V3):
+	// 		ver = SNMP_V3
+	// 		id = int(pdu.identifier)
+	// 	case uint32(SNMP_V2C):
+	// 		ver = SNMP_V2C
+	// 		err = DecodePDUBody(&buffer, &pdu)
+	// 		if nil == err {
+	// 			id = int(pdu.request_id)
+	// 		}
+	// 		//community = C.GoString(pdu.community)
+	// 	case uint32(SNMP_V1):
+	// 		ver = SNMP_V1
+	// 		err = DecodePDUBody(&buffer, &pdu)
+	// 		if nil == err {
+	// 			id = int(pdu.request_id)
+	// 		}
+	// 		//community = C.GoString(pdu.community)
+	// 	}
+	// 	// if 0 == len(community) {
+	// 	// 	community = self.community
+	// 	// }
+	// 	self.ch <- &PingResult{Id: id, Addr: ra, Version: ver, Community: self.community, SecurityParams: self.securityParams, Timestamp: time.Now()}
+	// 	C.snmp_pdu_free(&pdu)
+	// }
 }
 
 type Pingers struct {

@@ -1,11 +1,5 @@
 package snmpclient
 
-// #include "bsnmp/config.h"
-// #include "bsnmp/asn1.h"
-// #include "bsnmp/snmp.h"
-// #include "priv.h"
-import "C"
-
 import (
 	"crypto"
 	"crypto/aes"
@@ -16,15 +10,8 @@ import (
 	"encoding/binary"
 	//"encoding/hex"
 	"crypto/hmac"
-	"errors"
 	"fmt"
-	"unsafe"
 )
-
-func init() {
-	md5.New()
-	sha1.New()
-}
 
 const (
 	SNMP_AUTH_KEY_LOOPCNT int = 1048576
@@ -32,11 +19,16 @@ const (
 	SNMP_EXTENDED_KEY_SIZ int = 64
 	SNMP_USM_AUTH_SIZE    int = 12
 
-	SNMP_PRIV_KEY_SIZ int = C.SNMP_PRIV_KEY_SIZ
+	//SNMP_PRIV_KEY_SIZ int = C.SNMP_PRIV_KEY_SIZ
 
 	SNMP_AUTH_HMACMD5_KEY_SIZ int = 16
 	SNMP_AUTH_HMACSHA_KEY_SIZ int = 20
 )
+
+func init() {
+	md5.New()
+	sha1.New()
+}
 
 func sc_des_crypt(isEncrypt bool, msg_salt, key, data []byte) error {
 
@@ -76,39 +68,39 @@ func sc_des_crypt(isEncrypt bool, msg_salt, key, data []byte) error {
 	return nil
 }
 
-//export SC_DES_Crypt
-func SC_DES_Crypt(is_encrypt int, salt *C.uint8_t, salt_len C.uint32_t,
-	key *C.uint8_t, key_len C.uint32_t,
-	scoped_ptr *C.uint8_t, scoped_len C.uint32_t,
-	err_msg *C.char, err_len int) C.enum_snmp_code {
-	msg_salt := readGoBytes(salt, salt_len)
-	priv_key := readGoBytes(key, key_len)
-	scoped := readGoBytes(scoped_ptr, scoped_len)
+// //export SC_DES_Crypt
+// func SC_DES_Crypt(is_encrypt int, salt *C.uint8_t, salt_len C.uint32_t,
+// 	key *C.uint8_t, key_len C.uint32_t,
+// 	scoped_ptr *C.uint8_t, scoped_len C.uint32_t,
+// 	err_msg *C.char, err_len int) C.enum_snmp_code {
+// 	msg_salt := readGoBytes(salt, salt_len)
+// 	priv_key := readGoBytes(key, key_len)
+// 	scoped := readGoBytes(scoped_ptr, scoped_len)
 
-	// bytes := make([]byte, len(scoped))
-	// copy(bytes, scoped)
+// 	// bytes := make([]byte, len(scoped))
+// 	// copy(bytes, scoped)
 
-	var err error
-	if is_encrypt == 0 {
-		err = sc_des_crypt(false, msg_salt, priv_key, scoped)
-	} else {
-		err = sc_des_crypt(true, msg_salt, priv_key, scoped)
-	}
+// 	var err error
+// 	if is_encrypt == 0 {
+// 		err = sc_des_crypt(false, msg_salt, priv_key, scoped)
+// 	} else {
+// 		err = sc_des_crypt(true, msg_salt, priv_key, scoped)
+// 	}
 
-	if nil == err {
-		memcpy(scoped_ptr, int(scoped_len), scoped)
+// 	if nil == err {
+// 		memcpy(scoped_ptr, int(scoped_len), scoped)
 
-		// if 0 == is_encrypt {
-		//	fmt.Println("priv_key=" + hex.EncodeToString(priv_key))
-		//	fmt.Println("data=" + hex.EncodeToString(bytes))
-		//	fmt.Println("encryptoed=" + hex.EncodeToString(scoped))
-		// }
+// 		// if 0 == is_encrypt {
+// 		//	fmt.Println("priv_key=" + hex.EncodeToString(priv_key))
+// 		//	fmt.Println("data=" + hex.EncodeToString(bytes))
+// 		//	fmt.Println("encryptoed=" + hex.EncodeToString(scoped))
+// 		// }
 
-		return C.SNMP_CODE_OK
-	}
-	strcpy(err_msg, err_len, err.Error())
-	return C.SNMP_CODE_ERR_GOFUNCTION
-}
+// 		return C.SNMP_CODE_OK
+// 	}
+// 	strcpy(err_msg, err_len, err.Error())
+// 	return C.SNMP_CODE_ERR_GOFUNCTION
+// }
 
 func sc_des_encrypt(msg_salt, key, data []byte) error {
 	return sc_des_crypt(true, msg_salt, key, data)
@@ -147,39 +139,39 @@ func sc_aes_crypt(isEncrypt bool, engine_boots, engine_time int, msg_salt, key, 
 	return nil
 }
 
-//export SC_AES_Crypt
-func SC_AES_Crypt(is_encrypt int, engine_boots, engine_time int,
-	salt *C.uint8_t, salt_len C.uint32_t,
-	key *C.uint8_t, key_len C.uint32_t,
-	scoped_ptr *C.uint8_t, scoped_len C.uint32_t,
-	err_msg *C.char, err_len int) C.enum_snmp_code {
-	msg_salt := readGoBytes(salt, salt_len)
-	priv_key := readGoBytes(key, key_len)
-	scoped := readGoBytes(scoped_ptr, scoped_len)
+// //export SC_AES_Crypt
+// func SC_AES_Crypt(is_encrypt int, engine_boots, engine_time int,
+// 	salt *C.uint8_t, salt_len C.uint32_t,
+// 	key *C.uint8_t, key_len C.uint32_t,
+// 	scoped_ptr *C.uint8_t, scoped_len C.uint32_t,
+// 	err_msg *C.char, err_len int) C.enum_snmp_code {
+// 	msg_salt := readGoBytes(salt, salt_len)
+// 	priv_key := readGoBytes(key, key_len)
+// 	scoped := readGoBytes(scoped_ptr, scoped_len)
 
-	//bytes := make([]byte, len(scoped))
-	//copy(bytes, scoped)
+// 	//bytes := make([]byte, len(scoped))
+// 	//copy(bytes, scoped)
 
-	var err error
-	if is_encrypt == 0 {
-		err = sc_aes_crypt(false, engine_boots, engine_time, msg_salt, priv_key, scoped)
-	} else {
-		err = sc_aes_crypt(true, engine_boots, engine_time, msg_salt, priv_key, scoped)
-	}
+// 	var err error
+// 	if is_encrypt == 0 {
+// 		err = sc_aes_crypt(false, engine_boots, engine_time, msg_salt, priv_key, scoped)
+// 	} else {
+// 		err = sc_aes_crypt(true, engine_boots, engine_time, msg_salt, priv_key, scoped)
+// 	}
 
-	if nil == err {
-		// if 0 == is_encrypt {
-		//	fmt.Println("priv_key=" + hex.EncodeToString(priv_key))
-		//	fmt.Println("data=" + hex.EncodeToString(bytes))
-		//	fmt.Println("encryptoed=" + hex.EncodeToString(scoped))
-		// }
+// 	if nil == err {
+// 		// if 0 == is_encrypt {
+// 		//	fmt.Println("priv_key=" + hex.EncodeToString(priv_key))
+// 		//	fmt.Println("data=" + hex.EncodeToString(bytes))
+// 		//	fmt.Println("encryptoed=" + hex.EncodeToString(scoped))
+// 		// }
 
-		memcpy(scoped_ptr, int(scoped_len), scoped)
-		return C.SNMP_CODE_OK
-	}
-	strcpy(err_msg, err_len, err.Error())
-	return C.SNMP_CODE_ERR_GOFUNCTION
-}
+// 		memcpy(scoped_ptr, int(scoped_len), scoped)
+// 		return C.SNMP_CODE_OK
+// 	}
+// 	strcpy(err_msg, err_len, err.Error())
+// 	return C.SNMP_CODE_ERR_GOFUNCTION
+// }
 
 func sc_aes_encrypt(engine_boots, engine_time int, msg_salt, key, data []byte) error {
 	return sc_aes_crypt(true, engine_boots, engine_time, msg_salt, key, data)
@@ -189,38 +181,38 @@ func sc_aes_decrypt(engine_boots, engine_time int, msg_salt, key, data []byte) e
 	return sc_aes_crypt(false, engine_boots, engine_time, msg_salt, key, data)
 }
 
-//export SCGenerateDigest
-func SCGenerateDigest(hash_type int, key *C.uint8_t, key_len C.uint32_t,
-	scoped_ptr *C.uint8_t, scoped_len C.uint32_t,
-	out_ptr *C.uint8_t, out_len C.uint32_t, err_msg *C.char, err_len int) C.enum_snmp_code {
+// //export SCGenerateDigest
+// func SCGenerateDigest(hash_type int, key *C.uint8_t, key_len C.uint32_t,
+// 	scoped_ptr *C.uint8_t, scoped_len C.uint32_t,
+// 	out_ptr *C.uint8_t, out_len C.uint32_t, err_msg *C.char, err_len int) C.enum_snmp_code {
 
-	priv_key := readGoBytes(key, key_len)
-	scoped := readGoBytes(scoped_ptr, scoped_len)
-	var err error
-	var bytes []byte
+// 	priv_key := readGoBytes(key, key_len)
+// 	scoped := readGoBytes(scoped_ptr, scoped_len)
+// 	var err error
+// 	var bytes []byte
 
-	switch hash_type {
-	case C.SNMP_AUTH_HMAC_MD5:
-		bytes, err = generate_digest(crypto.MD5, priv_key, scoped)
-	case C.SNMP_AUTH_HMAC_SHA:
-		bytes, err = generate_digest(crypto.SHA1, priv_key, scoped)
-	default:
-		err = fmt.Errorf("unsupport auth type - '%d'", hash_type)
-	}
+// 	switch hash_type {
+// 	case C.SNMP_AUTH_HMAC_MD5:
+// 		bytes, err = generate_digest(crypto.MD5, priv_key, scoped)
+// 	case C.SNMP_AUTH_HMAC_SHA:
+// 		bytes, err = generate_digest(crypto.SHA1, priv_key, scoped)
+// 	default:
+// 		err = fmt.Errorf("unsupport auth type - '%d'", hash_type)
+// 	}
 
-	if nil == err {
-		err = memcpy(out_ptr, int(out_len), bytes)
-		if nil == err {
-			//fmt.Println("digest_key=" + hex.EncodeToString(priv_key))
-			//fmt.Println("digest_data=" + hex.EncodeToString(scoped))
-			//fmt.Println("digest=" + hex.EncodeToString(bytes))
-			//fmt.Println("digest_mem=" + hex.EncodeToString(readGoBytes(out_ptr, out_len)))
-			return C.SNMP_CODE_OK
-		}
-	}
-	strcpy(err_msg, err_len, err.Error())
-	return C.SNMP_CODE_ERR_GOFUNCTION
-}
+// 	if nil == err {
+// 		err = memcpy(out_ptr, int(out_len), bytes)
+// 		if nil == err {
+// 			//fmt.Println("digest_key=" + hex.EncodeToString(priv_key))
+// 			//fmt.Println("digest_data=" + hex.EncodeToString(scoped))
+// 			//fmt.Println("digest=" + hex.EncodeToString(bytes))
+// 			//fmt.Println("digest_mem=" + hex.EncodeToString(readGoBytes(out_ptr, out_len)))
+// 			return C.SNMP_CODE_OK
+// 		}
+// 	}
+// 	strcpy(err_msg, err_len, err.Error())
+// 	return C.SNMP_CODE_ERR_GOFUNCTION
+// }
 
 func generate_digest(hash crypto.Hash, key, src []byte) ([]byte, error) {
 	hmacHash := hmac.New(hash.New, key)
@@ -229,7 +221,7 @@ func generate_digest(hash crypto.Hash, key, src []byte) ([]byte, error) {
 		return nil, e
 	}
 
-	return hmacHash.Sum(nil)[0:SNMP_USM_AUTH_SIZE], nil
+	return hmacHash.Sum(nil)[0:hmacHash.BlockSize()], nil
 }
 
 func generate_digest2(hash crypto.Hash, key, src []byte) ([]byte, error) {
@@ -291,9 +283,9 @@ func generate_keys(hash crypto.Hash, passphrase string) ([]byte, SnmpError) {
 }
 
 func generate_localization_keys(hash crypto.Hash, b1, b2 []byte) ([]byte, SnmpError) {
-	if C.SNMP_ENGINE_ID_SIZ < len(b2) {
-		return nil, Error(SNMP_CODE_BADLEN, "'b2' is too long.")
-	}
+	//if C.SNMP_ENGINE_ID_SIZ < len(b2) {
+	//	return nil, Error(SNMP_CODE_BADLEN, "'b2' is too long.")
+	//}
 	calc := hash.New()
 	_, err := calc.Write(b1)
 	if nil != err {
@@ -310,34 +302,34 @@ func generate_localization_keys(hash crypto.Hash, b1, b2 []byte) ([]byte, SnmpEr
 	return calc.Sum(nil), nil
 }
 
-func fill_pdu_for_test_crypt(is_encrypt bool, pt C.enum_snmp_privacy, salt, key, data []byte) ([]byte, error) {
-	var digest [100000]byte
-	var pdu C.snmp_pdu_t
+// func fill_pdu_for_test_crypt(is_encrypt bool, pt C.enum_snmp_privacy, salt, key, data []byte) ([]byte, error) {
+// 	var digest [100000]byte
+// 	var pdu C.snmp_pdu_t
 
-	C.snmp_pdu_init(&pdu)
+// 	C.snmp_pdu_init(&pdu)
 
-	pdu.user.priv_proto = pt
+// 	pdu.user.priv_proto = pt
 
-	C.memcpy(unsafe.Pointer(&pdu.user.priv_key[0]), unsafe.Pointer(&key[0]), C.size_t(C.SNMP_PRIV_KEY_SIZ))
-	pdu.user.priv_len = C.size_t(16) //C.size_t(C.SNMP_PRIV_KEY_SIZ) //(au == SNMP_PRIV_DES ) ? SNMP_AUTH_HMACMD5_KEY_SIZ : SNMP_AUTH_HMACSHA_KEY_SIZ;
+// 	C.memcpy(unsafe.Pointer(&pdu.user.priv_key[0]), unsafe.Pointer(&key[0]), C.size_t(C.SNMP_PRIV_KEY_SIZ))
+// 	pdu.user.priv_len = C.size_t(16) //C.size_t(C.SNMP_PRIV_KEY_SIZ) //(au == SNMP_PRIV_DES ) ? SNMP_AUTH_HMACMD5_KEY_SIZ : SNMP_AUTH_HMACSHA_KEY_SIZ;
 
-	pdu.engine.engine_boots = 3
-	pdu.engine.engine_time = 3
-	C.memcpy(unsafe.Pointer(&pdu.msg_salt[0]), unsafe.Pointer(&salt[0]), 8)
+// 	pdu.engine.engine_boots = 3
+// 	pdu.engine.engine_time = 3
+// 	C.memcpy(unsafe.Pointer(&pdu.msg_salt[0]), unsafe.Pointer(&salt[0]), 8)
 
-	copy(digest[:], data)
-	pdu.scoped_ptr = (*C.u_char)(unsafe.Pointer(&digest[0]))
-	pdu.scoped_len = C.size_t((len(data) / 8) * 8)
-	var ret_code C.enum_snmp_code
-	if is_encrypt {
-		ret_code = C.snmp_pdu_encrypt(&pdu)
-	} else {
-		ret_code = C.snmp_pdu_decrypt(&pdu)
-	}
-	if 0 != ret_code {
-		err := errors.New(C.GoString(C.snmp_pdu_get_error(&pdu, ret_code)))
-		return nil, err
-	}
+// 	copy(digest[:], data)
+// 	pdu.scoped_ptr = (*C.u_char)(unsafe.Pointer(&digest[0]))
+// 	pdu.scoped_len = C.size_t((len(data) / 8) * 8)
+// 	var ret_code C.enum_snmp_code
+// 	if is_encrypt {
+// 		ret_code = C.snmp_pdu_encrypt(&pdu)
+// 	} else {
+// 		ret_code = C.snmp_pdu_decrypt(&pdu)
+// 	}
+// 	if 0 != ret_code {
+// 		err := errors.New(C.GoString(C.snmp_pdu_get_error(&pdu, ret_code)))
+// 		return nil, err
+// 	}
 
-	return readGoBytes((*C.uint8_t)(pdu.scoped_ptr), C.uint32_t(pdu.scoped_len)), nil
-}
+// 	return readGoBytes((*C.uint8_t)(pdu.scoped_ptr), C.uint32_t(pdu.scoped_len)), nil
+// }

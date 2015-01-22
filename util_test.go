@@ -5,7 +5,6 @@ import (
 )
 
 func TestNormalizeAddress(t *testing.T) {
-
 	addr := NormalizeAddress("12")
 	if "12:161" != addr {
 		t.Errorf("assert '%s' != '%s'", "12", "12")

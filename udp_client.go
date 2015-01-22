@@ -1,10 +1,5 @@
 package snmpclient
 
-// #include "bsnmp/config.h"
-// #include "bsnmp/asn1.h"
-// #include "bsnmp/snmp.h"
-// #include "bsnmp/gobindings.h"
-import "C"
 import (
 	"bytes"
 	"encoding/hex"
@@ -17,7 +12,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"unsafe"
 )
 
 var (
@@ -612,99 +606,101 @@ func (client *UdpClient) handleRecv(recv_bytes []byte) {
 		}
 	}()
 
-	var buffer C.asn_buf_t
-	var result PDU
-	var req *clientRequest
-	var ok bool
+	panic("not implemented")
 
-	internal := newNativePdu()
-	C.snmp_pdu_init(internal)
-	defer releaseNativePdu(internal)
+	// 	var buffer C.asn_buf_t
+	// 	var result PDU
+	// 	var req *clientRequest
+	// 	var ok bool
 
-	C.set_asn_u_ptr(&buffer.asn_u, (*C.char)(unsafe.Pointer(&recv_bytes[0])))
-	buffer.asn_len = C.size_t(len(recv_bytes))
+	// 	internal := newNativePdu()
+	// 	C.snmp_pdu_init(internal)
+	// 	defer releaseNativePdu(internal)
 
-	err := DecodePDUHeader(&buffer, internal)
-	if nil != err {
-		client.ERROR.Print(client.logCtx, "decode head of pdu failed", err)
-		return
-	}
-	defer C.snmp_pdu_free(internal)
+	// 	C.set_asn_u_ptr(&buffer.asn_u, (*C.char)(unsafe.Pointer(&recv_bytes[0])))
+	// 	buffer.asn_len = C.size_t(len(recv_bytes))
 
-	if uint32(SNMP_V3) == internal.version {
-		req, ok = client.pendings[int(internal.identifier)]
-		if !ok {
-			client.ERROR.Print(client.logCtx, "request with requestId was ", int(internal.identifier), " or ", int(internal.request_id), " is not exists.")
+	// 	err := DecodePDUHeader(&buffer, internal)
+	// 	if nil != err {
+	// 		client.ERROR.Print(client.logCtx, "decode head of pdu failed", err)
+	// 		return
+	// 	}
+	// 	defer C.snmp_pdu_free(internal)
 
-			// for i, _ := range client.pendings {
-			// 	client.ERROR.Print(i)
-			// }
-			return
-		}
-		delete(client.pendings, int(internal.identifier))
+	// 	if uint32(SNMP_V3) == internal.version {
+	// 		req, ok = client.pendings[int(internal.identifier)]
+	// 		if !ok {
+	// 			client.ERROR.Print(client.logCtx, "request with requestId was ", int(internal.identifier), " or ", int(internal.request_id), " is not exists.")
 
-		v3old, ok := req.request.(*V3PDU)
-		if !ok {
-			err = Error(SNMP_CODE_FAILED, "receive pdu is a v3 pdu.")
-			goto complete
-		}
-		usm, ok := v3old.securityModel.(*USM)
-		if !ok {
-			err = Error(SNMP_CODE_FAILED, "receive pdu is not usm.")
-			goto complete
-		}
-		err = FillUser(internal, usm.auth_proto, usm.localization_auth_key,
-			usm.priv_proto, usm.localization_priv_key)
-		if nil != err {
-			client.ERROR.Print(client.logCtx, "fill user information failed,", err.Error())
-			goto complete
-		}
+	// 			// for i, _ := range client.pendings {
+	// 			// 	client.ERROR.Print(i)
+	// 			// }
+	// 			return
+	// 		}
+	// 		delete(client.pendings, int(internal.identifier))
 
-		err, ok = DecodePDUBody2(&buffer, internal)
-		if nil != err {
-			client.ERROR.Print(client.logCtx, "decode body of pdu failed", err.Error())
-			goto complete
-		}
-		if ok {
-			client.ERROR.Print(client.logCtx, "ignored some error", hex.EncodeToString(recv_bytes))
-		}
+	// 		v3old, ok := req.request.(*V3PDU)
+	// 		if !ok {
+	// 			err = Error(SNMP_CODE_FAILED, "receive pdu is a v3 pdu.")
+	// 			goto complete
+	// 		}
+	// 		usm, ok := v3old.securityModel.(*USM)
+	// 		if !ok {
+	// 			err = Error(SNMP_CODE_FAILED, "receive pdu is not usm.")
+	// 			goto complete
+	// 		}
+	// 		err = FillUser(internal, usm.auth_proto, usm.localization_auth_key,
+	// 			usm.priv_proto, usm.localization_priv_key)
+	// 		if nil != err {
+	// 			client.ERROR.Print(client.logCtx, "fill user information failed,", err.Error())
+	// 			goto complete
+	// 		}
 
-		if client.DEBUG.IsEnabled() {
-			C.snmp_pdu_dump(internal)
-		}
+	// 		err, ok = DecodePDUBody2(&buffer, internal)
+	// 		if nil != err {
+	// 			client.ERROR.Print(client.logCtx, "decode body of pdu failed", err.Error())
+	// 			goto complete
+	// 		}
+	// 		if ok {
+	// 			client.ERROR.Print(client.logCtx, "ignored some error", hex.EncodeToString(recv_bytes))
+	// 		}
 
-		var v3 V3PDU
-		_, err = v3.decodePDU(internal)
-		result = &v3
-	} else {
-		err, ok = DecodePDUBody2(&buffer, internal)
-		if nil != err {
-			client.ERROR.Print(client.logCtx, "decode body of pdu failed", err.Error())
-			return
-		}
+	// 		if client.DEBUG.IsEnabled() {
+	// 			C.snmp_pdu_dump(internal)
+	// 		}
 
-		if ok {
-			client.ERROR.Print(client.logCtx, "ignored some error", hex.EncodeToString(recv_bytes))
-		}
+	// 		var v3 V3PDU
+	// 		_, err = v3.decodePDU(internal)
+	// 		result = &v3
+	// 	} else {
+	// 		err, ok = DecodePDUBody2(&buffer, internal)
+	// 		if nil != err {
+	// 			client.ERROR.Print(client.logCtx, "decode body of pdu failed", err.Error())
+	// 			return
+	// 		}
 
-		req, ok = client.pendings[int(internal.request_id)]
-		if !ok {
-			client.ERROR.Print(client.logCtx, "request with requestId was", int(internal.request_id), "is not exists.")
-			return
-		}
-		delete(client.pendings, int(internal.request_id))
+	// 		if ok {
+	// 			client.ERROR.Print(client.logCtx, "ignored some error", hex.EncodeToString(recv_bytes))
+	// 		}
 
-		if client.DEBUG.IsEnabled() {
-			C.snmp_pdu_dump(internal)
-		}
+	// 		req, ok = client.pendings[int(internal.request_id)]
+	// 		if !ok {
+	// 			client.ERROR.Print(client.logCtx, "request with requestId was", int(internal.request_id), "is not exists.")
+	// 			return
+	// 		}
+	// 		delete(client.pendings, int(internal.request_id))
 
-		v2 := &V2CPDU{}
-		_, err = v2.decodePDU(internal)
-		result = v2
-	}
+	// 		if client.DEBUG.IsEnabled() {
+	// 			C.snmp_pdu_dump(internal)
+	// 		}
 
-complete:
-	req.reply(result, err)
+	// 		v2 := &V2CPDU{}
+	// 		_, err = v2.decodePDU(internal)
+	// 		result = v2
+	// 	}
+
+	// complete:
+	// 	req.reply(result, err)
 }
 
 func (client *UdpClient) handleSend(reply *clientRequest, pdu PDU) {

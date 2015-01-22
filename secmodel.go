@@ -1,11 +1,5 @@
 package snmpclient
 
-// #include "bsnmp/config.h"
-// #include <stdlib.h>
-// #include "bsnmp/asn1.h"
-// #include "bsnmp/snmp.h"
-import "C"
-
 import (
 	"crypto"
 	"encoding/hex"
@@ -15,8 +9,8 @@ import (
 
 type securityModelWithCopy interface {
 	SecurityModel
-	Write(*C.snmp_user_t) SnmpError
-	Read(*C.snmp_user_t) SnmpError
+	//Write(*C.snmp_user_t) SnmpError
+	//Read(*C.snmp_user_t) SnmpError
 }
 
 func getAuth(params map[string]string) (crypto.Hash, AuthType, string, SnmpError) {
@@ -191,38 +185,38 @@ func (usm *USM) Localize(key []byte) (err SnmpError) {
 //	char				sec_name[SNMP_ADM_STR32_SIZ];
 // } snmp_user_t;
 
-func (usm *USM) Write(user *C.snmp_user_t) SnmpError {
+// func (usm *USM) Write(user *C.snmp_user_t) SnmpError {
 
-	user.auth_proto = uint32(usm.auth_proto)
-	user.priv_proto = uint32(usm.priv_proto)
+// 	user.auth_proto = uint32(usm.auth_proto)
+// 	user.priv_proto = uint32(usm.priv_proto)
 
-	err := strcpy(&user.sec_name[0], SNMP_ADM_STR32_LEN, usm.name)
-	if nil != err {
-		return Error(SNMP_CODE_ERR_WRONG_LENGTH, "sec_name too long")
-	}
+// 	err := strcpy(&user.sec_name[0], SNMP_ADM_STR32_LEN, usm.name)
+// 	if nil != err {
+// 		return Error(SNMP_CODE_ERR_WRONG_LENGTH, "sec_name too long")
+// 	}
 
-	err = memcpy(&user.auth_key[0], SNMP_AUTH_KEY_LEN, usm.localization_auth_key)
-	if nil != err {
-		return Error(SNMP_CODE_ERR_WRONG_LENGTH, "auth_key too long")
-	}
-	user.auth_len = C.size_t(len(usm.localization_auth_key))
+// 	err = memcpy(&user.auth_key[0], SNMP_AUTH_KEY_LEN, usm.localization_auth_key)
+// 	if nil != err {
+// 		return Error(SNMP_CODE_ERR_WRONG_LENGTH, "auth_key too long")
+// 	}
+// 	user.auth_len = C.size_t(len(usm.localization_auth_key))
 
-	err = memcpy(&user.priv_key[0], SNMP_AUTH_KEY_LEN, usm.localization_priv_key)
-	if nil != err {
-		return Error(SNMP_CODE_ERR_WRONG_LENGTH, "priv_key too long")
-	}
-	user.priv_len = C.size_t(len(usm.localization_priv_key))
-	return nil
-}
+// 	err = memcpy(&user.priv_key[0], SNMP_AUTH_KEY_LEN, usm.localization_priv_key)
+// 	if nil != err {
+// 		return Error(SNMP_CODE_ERR_WRONG_LENGTH, "priv_key too long")
+// 	}
+// 	user.priv_len = C.size_t(len(usm.localization_priv_key))
+// 	return nil
+// }
 
-func (usm *USM) Read(user *C.snmp_user_t) SnmpError {
-	usm.auth_proto = AuthType(user.auth_proto)
-	usm.priv_proto = PrivType(user.priv_proto)
-	usm.name = readGoString(&user.sec_name[0], SNMP_ADM_STR32_LEN)
-	usm.localization_auth_key = readGoBytes(&user.auth_key[0], C.uint32_t(user.auth_len))
-	usm.localization_priv_key = readGoBytes(&user.priv_key[0], C.uint32_t(user.priv_len))
-	return nil
-}
+// func (usm *USM) Read(user *C.snmp_user_t) SnmpError {
+// 	usm.auth_proto = AuthType(user.auth_proto)
+// 	usm.priv_proto = PrivType(user.priv_proto)
+// 	usm.name = readGoString(&user.sec_name[0], SNMP_ADM_STR32_LEN)
+// 	usm.localization_auth_key = readGoBytes(&user.auth_key[0], C.uint32_t(user.auth_len))
+// 	usm.localization_priv_key = readGoBytes(&user.priv_key[0], C.uint32_t(user.priv_len))
+// 	return nil
+// }
 
 func (usm *USM) String() string {
 	if "" != usm.auth_passphrase {

@@ -11,6 +11,8 @@ import (
 var excepted = "[1.3.6.1.2.1.1.1.0='57696e646f77732048617a656c20362e302e363030322053657276696365205061636b2032202053657276657220342e302c20456e74657270726973652045646974696f6e207838362046616d696c792036204d6f64656c203233205374657070696e672036']"
 
 func TestV3SendV3Failed(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "33.0.0.0:0", func(t *testing.T, cl Client, listener *snmpTestServer) {
 
 		cl.(*UdpClient).next_id = 233
@@ -36,6 +38,8 @@ func TestV3SendV3Failed(t *testing.T) {
 }
 
 func TestV3DisconnectWhitv3Pdu(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 		var res, req PDU
@@ -107,6 +111,8 @@ func TestV3DisconnectWhitv3Pdu(t *testing.T) {
 }
 
 func TestV3DisconnectAndReconnectWhitv3Pdu(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 		var res, req PDU
@@ -214,6 +220,8 @@ func TestV3DisconnectAndReconnectWhitv3Pdu(t *testing.T) {
 }
 
 func TestV3ReadOkWhitv3Pdu(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 
@@ -268,6 +276,8 @@ func TestV3ReadOkWhitv3Pdu(t *testing.T) {
 }
 
 func TestV3AuthFailureWhitv3Pdu(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 
@@ -318,6 +328,8 @@ func TestV3AuthFailureWhitv3Pdu(t *testing.T) {
 }
 
 func TestV3AuthErrorFailureWhitv3Pdu(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 
@@ -374,6 +386,8 @@ func TestV3AuthErrorFailureWhitv3Pdu(t *testing.T) {
 }
 
 func TestV3PrivFailureWhitv3Pdu(t *testing.T) {
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 
@@ -430,7 +444,8 @@ func TestV3PrivFailureWhitv3Pdu(t *testing.T) {
 }
 
 func TestV3AutoRedisconverWhitEngineIdTimeout(t *testing.T) {
-	t.Skip("next")
+	t.SkipNow()
+
 	testSnmpWith(t, "127.0.0.1:0", "", func(t *testing.T, cl Client, listener *snmpTestServer) {
 		var trapError SnmpError
 		var sq_count int = 0
